@@ -1,72 +1,74 @@
-version: '3.8'
+version: '3'
 
-#Docker Networks
 networks:
   laravel:
-    driver: bridge
 
-#Volumes
-volumes:
-  dbdata:
-    driver: local
-
-# Workflow
 services:
-  nginx:
+  backend:
     build:
-      context: .
-      dockerfile: ./compose/nginx/Dockerfile
+      context: ./dockerfiles
+      dockerfile: nginx.dockerfile
+      args:
+        - UID=${UID:-1000}
+        - GID=${GID:-1000}
     container_name: nginx
     ports:
-      - "8080:80"
-      # Port for xdebug (ensure this matches the remote_port in the xdebug.ini)
-      - "9001:9001"
+      - 8080:80
     volumes:
       - ./backend:/var/www/html:delegated
     depends_on:
       - php
+      - redis
       - mysql
     networks:
       - laravel
 
   mysql:
-    image: mysql:5.7.29
+    image: mariadb:10.6
     container_name: mysql
     restart: unless-stopped
     tty: true
     ports:
-      - "3306:3306"
+      - 3307:3306
     environment:
-      MYSQL_DATABASE: ${DB_DATABASE}
-      MYSQL_USER: ${DB_USERNAME} 
-      MYSQL_PASSWORD: ${DB_PASSWORD} 
+      MYSQL_DATABASE: homestead
+      MYSQL_USER: homestead
+      MYSQL_PASSWORD: secret
       MYSQL_ROOT_PASSWORD: secret
       SERVICE_TAGS: dev
       SERVICE_NAME: mysql
-    volumes:
-      - ./compose/mysql/my.cnf:/etc/mysql/my.cnf
-      - dbdata:/var/lib/mysql/
     networks:
       - laravel
 
   php:
     build:
-      context: .
-      dockerfile: ./compose/php/Dockerfile
+      context: ./dockerfiles
+      dockerfile: php.dockerfile
+      args:
+        - UID=${UID:-1000}
+        - GID=${GID:-1000}
     container_name: php
     volumes:
       - ./backend:/var/www/html:delegated
-      # Enable xdebug
-      - ./compose/php/xdebug.ini:/usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
+    networks:
+      - laravel
+
+  redis:
+    image: redis:alpine
+    container_name: redis
+    restart: unless-stopped
     ports:
-      - "9000:9000"
+      - 6379:6379
     networks:
       - laravel
 
   composer:
     build:
-      context: .
-      dockerfile: ./compose/php/composer/Dockerfile
+      context: ./dockerfiles
+      dockerfile: composer.dockerfile
+      args:
+        - UID=${UID:-1000}
+        - GID=${GID:-1000}
     container_name: composer
     volumes:
       - ./backend:/var/www/html
@@ -74,21 +76,36 @@ services:
     depends_on:
       - php
     user: laravel
+    entrypoint: ['composer', '--ignore-platform-reqs']
     networks:
       - laravel
-    entrypoint: ['composer', '--ignore-platform-reqs']
+
+  npm:
+    image: node:13.7
+    container_name: npm
+    volumes:
+      - ./frontend:/var/www/html
+    ports:
+      - 3000:3000
+      - 3001:3001
+    working_dir: /var/www/html
+    entrypoint: ['npm']
+    networks:
+      - laravel
 
   artisan:
     build:
-      context: .
-      dockerfile: ./compose/php/Dockerfile
+      context: ./dockerfiles
+      dockerfile: php.dockerfile
+      args:
+        - UID=${UID:-1000}
+        - GID=${GID:-1000}
     container_name: artisan
     volumes:
       - ./backend:/var/www/html:delegated
     depends_on:
       - mysql
     working_dir: /var/www/html
-    user: laravel
     entrypoint: ['php', '/var/www/html/artisan']
     networks:
       - laravel
