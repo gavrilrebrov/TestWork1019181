@@ -1,9 +1,13 @@
 <script setup>
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 
 const router = useRouter()
+const route = useRoute()
 
 const go = path => router.push(path)
+const is = type => {
+    return route.name === `${type}-list` || route.name === `${type}-create` || route.name === `${type}-edit`
+}
 </script>
 
 <template>
@@ -17,11 +21,19 @@ const go = path => router.push(path)
     <div class="container mx-auto lg:max-w-screen-lg mt-6">
         <div class="flex gap-x-6">
             <div class="w-2/12 flex-shrink-0 flex flex-col gap-y-4 font-medium text-gray-500">
-                <div class="cursor-pointer" @click="go('/')">
+                <div class="cursor-pointer" @click="go('/')"
+                    :class="{
+                        'text-blue-500 font-semibold': is('posts')
+                    }"
+                >
                     Посты
                 </div>
 
-                <div class="cursor-pointer" @click="go('/categories')">
+                <div class="cursor-pointer" @click="go('/categories')"
+                    :class="{
+                        'text-blue-500 font-semibold': is('categories')
+                    }"
+                >
                     Категории
                 </div>
             </div>

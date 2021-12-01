@@ -48,7 +48,7 @@ export default createRouter({
                     name: 'categories-create'
                 },
                 {
-                    path: ':postId',
+                    path: ':categoryId',
                     component: CategoriesEdit,
                     name: 'categories-edit'
                 }
