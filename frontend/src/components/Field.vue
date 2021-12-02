@@ -2,6 +2,9 @@
 import { defineProps, ref, watch, defineEmits } from 'vue'
 
 import Input from './Input.vue'
+import ImageUploader from './ImageUploader.vue'
+import Select from './Select.vue'
+import Editor from './Editor.vue'
 
 const props = defineProps(['modelValue', 'label', 'type', 'items'])
 
@@ -25,5 +28,11 @@ watch(() => props.modelValue, value => {
     </div>
     
     <Input v-if="type === 'input'" v-model="modelValue" />
+
+    <ImageUploader v-if="type === 'image'" v-model="modelValue" />
+
+    <Select v-if="type === 'select'" :items="items" v-model="modelValue" />
+
+    <Editor v-if="type === 'editor'" v-model="modelValue" />
 </div>
 </template>

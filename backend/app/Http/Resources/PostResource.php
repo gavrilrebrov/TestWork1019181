@@ -14,12 +14,13 @@ class PostResource extends JsonResource
             'title' => $this->title,
             'content' => $this->content,
             'category' => $this->category,
-            'thumbnail' => [
+            'thumbnail' => $this->media ? [
+                'id' => $this->media->id,
                 'url' => Storage::url($this->media->path),
                 'size' => $this->media->size,
                 'mime_type' => $this->media->mime_type,
                 'name' => $this->media->name,
-            ],
+            ] : null,
             'created_at' => $this->created_at,
         ];
     }

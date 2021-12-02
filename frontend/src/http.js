@@ -1,4 +1,4 @@
-const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8080'
+const apiUrl = import.meta.env.VITE_API_URL + '/api' || 'http://localhost:8080/api'
 
 export default {
     async save (url, data, id = '') {
@@ -6,7 +6,7 @@ export default {
             const formData = new FormData()
 
             for (let key in data) {
-                formData.append(key, data[key])
+                if (data[key]) formData.append(key, data[key])
             }
 
             if (id) {
@@ -19,6 +19,10 @@ export default {
                 method: 'post',
                 body: formData,
             })
+
+            console.log('res: ', res)
+            console.log('url: ', url)
+            console.log('data: ', data)
 
             return await res.json()
         } catch (err) {

@@ -1,14 +1,18 @@
 <script setup>
 import { useRouter, useRoute } from 'vue-router'
 import { computed } from 'vue'
+import { useStore } from 'vuex'
 
 import Icon from '@/components/Icon.vue'
 
 const router = useRouter()
 const route = useRoute()
+const store = useStore()
 
 const go = path => router.push(path)
 const back = () => router.go(-1)
+
+const loading = computed(() => store.state.posts.loading)
 
 const title = computed(() => {
     if (route.name === 'posts-list') {
@@ -35,6 +39,13 @@ const title = computed(() => {
         <div class="-my-4 -mr-4">
             <button class="button" @click="go('/create')" v-if="route.name === 'posts-list'">
                 Создать
+            </button>
+
+            <button class="button" form="posts_form" v-if="route.name === 'posts-edit' || route.name === 'posts-create'"
+                :disabled="loading.save"
+            >
+                <Icon v-if="loading.save" class="w-5 h-5 animate-spin" icon="loader" />
+                Сохранить
             </button>
         </div>
     </div>
